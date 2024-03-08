@@ -1,0 +1,56 @@
+import numpy as np
+import random
+
+def take_action(state, action):
+    if action == 0:
+        return max(0, state - 1), -1
+    elif action == 1:
+        return min(num_states - 1, state + 1), -1
+    elif action == 2:
+        return max(0, state - 5), -1
+    elif action == 3:
+        return min(num_states - 1, state + 5), -1
+
+num_states = 21
+num_actions = 4
+initial_state = 0
+destination_state = 20
+Q = np.zeros((num_states, num_actions))
+
+epsilon = 0.1
+alpha = 0.1
+gamma = 0.9
+num_episodes = 100
+
+
+for episode in range(num_episodes):
+    state = initial_state
+    reached_destination = False
+
+    while not reached_destination:
+        if random.uniform(0, 1) < epsilon:
+            action = random.choice(range(num_actions))
+        else:
+            action = np.argmax(Q[state, :])
+
+        next_state, reward = take_action(state, action)
+
+        Q[state, action] = (1 - alpha) * Q[state, action] + alpha * (reward + gamma * np.max(Q[next_state, :]))
+
+        state = next_state
+        if state == destination_state:
+            reached_destination = True
+
+print("Q-values after training:")
+print(Q)
+
+state = initial_state
+optimal_path = [state]
+
+while state != destination_state:
+    action = np.argmax(Q[state, :])
+    next_state, _ = take_action(state, action)
+    state = next_state
+    optimal_path.append(state)
+
+print("Optimal Path:", optimal_path)
